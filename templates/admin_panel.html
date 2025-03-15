@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <h2 class="text-center">پنل مدیریت</h2>
+    <h4 class="text-center mb-4">لیست نوبت‌های ثبت‌شده</h4>
+    {% if appointments %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>نام</th>
+                        <th>شماره تماس</th>
+                        <th>سن</th>
+                        <th>تحصیلات</th>
+                        <th>کد ملی</th>
+                        <th>مشاور</th>
+                        <th>تاریخ</th>
+                        <th>شماره نوبت</th>
+                        <th>وضعیت</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for appointment in appointments %}
+                        <tr>
+                            <td>{{ appointment.name }}</td>
+                            <td>{{ appointment.phone_number }}</td>
+                            <td>{{ appointment.age }}</td>
+                            <td>{{ appointment.education }}</td>
+                            <td>{{ appointment.national_id }}</td>
+                            <td>{{ appointment.consultant }}</td>
+                            <td>{{ appointment.date }}</td>
+                            <td>{{ appointment.appointment_number }}</td>
+                            <td>{{ 'تأیید شده' if appointment.confirmed else 'در انتظار' }}</td>
+                            <td>
+                                {% if not appointment.confirmed %}
+                                    <a href="{{ url_for('confirm_appointment', appointment_id=appointment.id) }}" class="btn btn-success btn-sm">تأیید</a>
+                                {% endif %}
+                                <a href="{{ url_for('cancel_appointment', appointment_id=appointment.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('آیا مطمئن هستید که می‌خواهید این نوبت را لغو کنید؟');">لغو</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-center">هیچ نوبت ثبت‌شده‌ای وجود ندارد.</p>
+    {% endif %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>
+{% endblock %}

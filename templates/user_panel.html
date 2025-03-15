@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="text-center">نوبت‌های من</h2>
+<table class="table table-striped mt-4">
+    <thead>
+        <tr>
+            <th>مشاور</th>
+            <th>تاریخ</th>
+            <th>وضعیت</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for appointment in appointments %}
+            <tr>
+                <td>{{ appointment.consultant }}</td>
+                <td>{{ appointment.date }}</td>
+                <td>{{ 'تأیید شده' if appointment.confirmed else 'در انتظار تأیید' }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %} 

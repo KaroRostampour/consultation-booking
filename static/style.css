@@ -1,0 +1,171 @@
+body {
+    font-family: 'Vazirmatn', sans-serif;
+    background: linear-gradient(135deg, #e0f7fa 0%, #e0eafc 100%);
+    direction: rtl;
+    text-align: right;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+.navbar {
+    background-color: #2c3e50;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    padding: 1rem 0;
+}
+
+.navbar-brand, .nav-link {
+    color: #ecf0f1 !important;
+    font-weight: 600;
+    transition: color 0.3s;
+}
+
+.nav-link:hover {
+    color: #3498db !important;
+}
+
+.home-section {
+    padding: 60px 20px;
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    margin: 20px auto;
+    max-width: 800px;
+}
+
+h1, h2 {
+    color: #2c3e50;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+h3 {
+    color: #34495e;
+    font-weight: 500;
+    margin-bottom: 30px;
+}
+
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+    padding: 20px;
+    margin-bottom: 20px;
+    transition: transform 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.form-label {
+    font-weight: 600;
+    color: #34495e;
+}
+
+.form-control {
+    border-radius: 8px;
+    border: 1px solid #dcdcdc;
+    padding: 12px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.form-control:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 8px rgba(52, 152, 219, 0.4);
+}
+
+.btn-primary {
+    background-color: #3498db;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 25px;
+    font-weight: 600;
+    transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: #2980b9;
+}
+
+.btn-success {
+    background-color: #28a745;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 25px;
+    font-weight: 600;
+    transition: background-color 0.3s;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+}
+
+.psychology-text {
+    color: #34495e;
+    line-height: 1.8;
+    font-size: 1.1rem;
+}
+
+/* استایل‌های جدید برای رزرو نوبت */
+.booking-card {
+    max-width: 500px;
+    margin: 20px auto;
+    padding: 25px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 15px;
+    animation: fadeIn 0.5s ease-in;
+}
+
+.booking-title {
+    color: #28a745;
+    margin-bottom: 20px;
+}
+
+.booking-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.booking-input {
+    border-color: #28a745;
+    background-color: #f1f9f4;
+    transition: all 0.3s ease;
+}
+
+.booking-input:focus {
+    border-color: #218838;
+    box-shadow: 0 0 10px rgba(40, 167, 69, 0.3);
+}
+
+.booking-btn {
+    background-color: #28a745;
+    color: white;
+    width: 100%;
+    transition: transform 0.3s, background-color 0.3s;
+}
+
+.booking-btn:hover {
+    transform: scale(1.05);
+    background-color: #218838;
+}
+
+.appointment-number {
+    font-size: 1.2rem;
+    animation: bounceIn 0.5s ease;
+}
+
+/* انیمیشن‌ها */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes bounceIn {
+    0% { transform: scale(0.8); opacity: 0; }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+}

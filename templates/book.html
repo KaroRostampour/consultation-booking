@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card booking-card">
+    <h2 class="text-center booking-title">رزرو نوبت</h2>
+    <form method="POST" class="booking-form">
+        <div class="mb-3">
+            <label class="form-label">نام شما</label>
+            <input type="text" name="name" class="form-control booking-input" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">شماره تماس</label>
+            <input type="text" name="phone_number" class="form-control booking-input" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">سن</label>
+            <input type="number" name="age" class="form-control booking-input" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">تحصیلات</label>
+            <input type="text" name="education" class="form-control booking-input" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">کد ملی</label>
+            <input type="text" name="national_id" class="form-control booking-input" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">مشاور</label>
+            <select name="consultant" class="form-select booking-input" required>
+                {% for consultant in consultants %}
+                    <option value="{{ consultant }}">{{ consultant }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">تاریخ (مثال: 1403/12/20)</label>
+            <input type="text" name="date" class="form-control booking-input" required>
+        </div>
+        <div class="text-center">
+            <button type="submit" class="btn btn-success booking-btn">ثبت نوبت</button>
+        </div>
+    </form>
+    {% if appointment_number %}
+        <div class="alert alert-success text-center mt-3 appointment-number">
+            شماره نوبت شما: <strong>{{ appointment_number }}</strong>
+        </div>
+    {% endif %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>
+{% endblock %}
