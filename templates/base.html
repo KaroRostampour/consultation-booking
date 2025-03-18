@@ -21,9 +21,15 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('index') }}">خانه</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('today_appointments') }}">نوبت‌های امروز</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('book') }}">رزرو نوبت</a>
+                    </li>
                     {% if current_user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('book') }}">رزرو نوبت</a>
+                            <a class="nav-link" href="{{ url_for('profile') }}">پروفایل</a>
                         </li>
                         {% if current_user.is_admin %}
                             <li class="nav-item">

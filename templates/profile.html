@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <h2 class="text-center">پروفایل کاربری</h2>
+    <h4 class="text-center mb-4">نوبت‌های شما، {{ current_user.username }}</h4>
+    {% if appointments %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>نام</th>
+                        <th>شماره تماس</th>
+                        <th>مشاور</th>
+                        <th>تاریخ</th>
+                        <th>شماره نوبت</th>
+                        <th>وضعیت</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for appointment in appointments %}
+                        <tr>
+                            <td>{{ appointment.name }}</td>
+                            <td>{{ appointment.phone_number }}</td>
+                            <td>{{ appointment.consultant }}</td>
+                            <td>{{ appointment.date }}</td>
+                            <td>{{ appointment.appointment_number }}</td>
+                            <td>{{ 'تأیید شده' if appointment.confirmed else 'در انتظار' }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-center">شما هیچ نوبتی ثبت نکرده‌اید.</p>
+    {% endif %}
+</div>
+{% endblock %}

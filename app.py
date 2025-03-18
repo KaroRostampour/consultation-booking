@@ -34,7 +34,7 @@ class User(UserMixin, db.Model):
 class Appointment(db.Model):
     __tablename__ = 'appointments'
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     name = db.Column(db.String(100), nullable=False)
     phone_number = db.Column(db.String(15), nullable=False)
     age = db.Column(db.Integer, nullable=False)
@@ -64,13 +64,12 @@ def today_appointments():
 
 # روت برای رزرو نوبت
 @app.route('/book', methods=['GET', 'POST'])
-@login_required
 def book():
     consultants = ['مشاور 1', 'مشاور 2', 'مشاور 3']
     if request.method == 'POST':
         appointment_number = str(random.randint(1000, 9999))
         appointment = Appointment(
-            user_id=current_user.id,
+            user_id=current_user.id if current_user.is_authenticated else None,
             name=request.form['name'],
             phone_number=request.form['phone_number'],
             age=request.form['age'],
@@ -156,10 +155,18 @@ def cancel_appointment(appointment_id):
     flash('نوبت با موفقیت لغو شد!')
     return redirect(url_for('admin_panel'))
 
+# روت برای صفحه پروفایل
+@app.route('/profile')
+@login_required
+def profile():
+    if not current_user.is_authenticated:
+        flash('لطفاً ابتدا وارد شوید!')
+        return redirect(url_for('login'))
+    appointments = Appointment.query.filter_by(user_id=current_user.id).all()
+    return render_template('profile.html', appointments=appointments)
+
 # اجرای اپلیکیشن
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(debug=True)
-
-    #تست

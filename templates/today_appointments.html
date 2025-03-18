@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <h2 class="text-center">نوبت‌های امروز ({{ today }})</h2>
+    {% if appointments %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>نام</th>
+                        <th>شماره تماس</th>
+                        <th>مشاور</th>
+                        <th>شماره نوبت</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for appointment in appointments %}
+                        <tr>
+                            <td>{{ appointment.name }}</td>
+                            <td>{{ appointment.phone_number }}</td>
+                            <td>{{ appointment.consultant }}</td>
+                            <td>{{ appointment.appointment_number }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-center">هیچ نوبتی برای امروز ثبت نشده است.</p>
+    {% endif %}
+</div>
+{% endblock %}
