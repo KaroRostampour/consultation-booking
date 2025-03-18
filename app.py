@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import os
 import random
 from datetime import datetime
+from jdatetime import datetime as jdatetime  # وارد کردن jdatetime
 
 # بارگذاری متغیرهای محیطی
 load_dotenv()
@@ -58,7 +59,7 @@ def index():
 # روت برای نوبت‌های امروز
 @app.route('/today_appointments')
 def today_appointments():
-    today = datetime.now().strftime('%Y/%m/%d')
+    today = jdatetime.now().strftime('%Y/%m/%d')  # تاریخ شمسی امروز
     appointments = Appointment.query.filter_by(date=today).all()
     return render_template('today_appointments.html', appointments=appointments, today=today)
 
@@ -76,7 +77,7 @@ def book():
             education=request.form['education'],
             national_id=request.form['national_id'],
             consultant=request.form['consultant'],
-            date=request.form['date'],
+            date=request.form['date'],  # تاریخ هنوز به‌صورت دستی وارد می‌شه
             appointment_number=appointment_number
         )
         db.session.add(appointment)
