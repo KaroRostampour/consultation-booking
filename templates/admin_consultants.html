@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>لیست مشاورها</h2>
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-info">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>نام</th>
+            <th>تخصص</th>
+            <th>ساعت کاری</th>
+            <th>روزهای کاری</th>
+            <th>عملیات</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for consultant in consultants %}
+        <tr>
+            <td>{{ consultant.name }}</td>
+            <td>{{ consultant.specialty }}</td>
+            <td>{{ consultant.time_start }} تا {{ consultant.time_end }}</td>
+            <td>{{ consultant.days }}</td>
+            <td>
+                <a href="{{ url_for('edit_consultant', consultant_id=consultant.id) }}" class="btn btn-warning btn-sm">ویرایش</a>
+                <a href="{{ url_for('delete_consultant', consultant_id=consultant.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('آیا مطمئن هستید که می‌خواهید این مشاور را حذف کنید؟')">حذف</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<a href="{{ url_for('add_consultant') }}" class="btn btn-primary">اضافه کردن مشاور جدید</a>
+{% endblock %}

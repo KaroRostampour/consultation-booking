@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>ویرایش مشاور</h2>
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-info">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+<form method="POST" action="{{ url_for('edit_consultant', consultant_id=consultant.id) }}">
+    <label for="name">نام مشاور:</label>
+    <input type="text" id="name" name="name" value="{{ consultant.name }}" required><br>
+
+    <label for="specialty">تخصص:</label>
+    <input type="text" id="specialty" name="specialty" value="{{ consultant.specialty }}" required><br>
+
+    <label for="time_start">ساعت شروع:</label>
+    <input type="time" id="time_start" name="time_start" value="{{ consultant.time_start }}" required><br>
+
+    <label for="time_end">ساعت پایان:</label>
+    <input type="time" id="time_end" name="time_end" value="{{ consultant.time_end }}" required><br>
+
+    <label for="days">روزهای کاری:</label>
+    <select id="days" name="days" multiple required>
+        {% set selected_days = consultant.days.split(',') %}
+        {% for day in ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه'] %}
+            <option value="{{ day }}" {% if day in selected_days %}selected{% endif %}>{{ day }}</option>
+        {% endfor %}
+    </select><br>
+
+    <button type="submit">ذخیره تغییرات</button>
+</form>
+{% endblock %}

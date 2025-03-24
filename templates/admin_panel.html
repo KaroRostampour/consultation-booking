@@ -45,7 +45,10 @@
         </div>
     {% else %}
         <p class="text-center">هیچ نوبت ثبت‌شده‌ای وجود ندارد.</p>
-    {% endif %}
+        {% endif %}
+    <div class="text-center mt-4">
+        <a href="{{ url_for('list_consultants') }}" class="btn btn-info">مدیریت مشاورها</a>
+    </div>
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}

@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card">
+    <h2 class="text-center">ثبت مشاور جدید</h2>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <form method="POST" action="{{ url_for('add_consultant') }}" class="p-4">
+        <div class="mb-3">
+            <label for="name" class="form-label">نام مشاور:</label>
+            <input type="text" id="name" name="name" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="specialty" class="form-label">تخصص:</label>
+            <input type="text" id="specialty" name="specialty" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="time_start" class="form-label">ساعت شروع:</label>
+            <input type="time" id="time_start" name="time_start" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="time_end" class="form-label">ساعت پایان:</label>
+            <input type="time" id="time_end" name="time_end" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="days" class="form-label">روزهای کاری:</label>
+            <select id="days" name="days" class="form-select" multiple required>
+                <option value="شنبه">شنبه</option>
+                <option value="یکشنبه">یکشنبه</option>
+                <option value="دوشنبه">دوشنبه</option>
+                <option value="سه‌شنبه">سه‌شنبه</option>
+                <option value="چهارشنبه">چهارشنبه</option>
+                <option value="پنج‌شنبه">پنج‌شنبه</option>
+                <option value="جمعه">جمعه</option>
+            </select>
+            <small class="form-text text-muted">برای انتخاب چند روز، کلید Ctrl (یا Cmd در مک) را نگه دارید.</small>
+        </div>
+
+        <div class="text-center">
+            <button type="submit" class="btn btn-primary">ثبت مشاور</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
