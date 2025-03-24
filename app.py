@@ -9,7 +9,7 @@ from dotenv import load_dotenv  # برای لود متغیرهای محیطی
 
 from models import db, User, Appointment, Consultant
 
-# لود متغیرهای محیطی از فایل .env
+
 load_dotenv()
 
 app = Flask(__name__)
