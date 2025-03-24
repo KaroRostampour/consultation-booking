@@ -1,72 +1,43 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from flask_bcrypt import Bcrypt
-from dotenv import load_dotenv
-import os
-import random
+from flask_migrate import Migrate
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from datetime import datetime
-from jdatetime import datetime as jdatetime  # وارد کردن jdatetime
+import os
+import random  # برای شماره نوبت تصادفی
+import bcrypt  # برای رمزنگاری پسورد
+from dotenv import load_dotenv  # برای لود متغیرهای محیطی
 
-# بارگذاری متغیرهای محیطی
+from models import db, User, Appointment, Consultant
+
+# لود متغیرهای محیطی از فایل .env
 load_dotenv()
 
-# تعریف اپلیکیشن Flask
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}/{os.getenv('DB_NAME')}"
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key')
+app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+pymysql://root:12345*@localhost/consultation_db"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
-bcrypt = Bcrypt(app)
-login_manager = LoginManager()
-login_manager.init_app(app)
+
+# مقداردهی اولیه db و migrate
+db.init_app(app)
+migrate = Migrate(app, db)
+login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
-# تعریف مدل User
-class User(UserMixin, db.Model):
-    __tablename__ = 'users'
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(100), unique=True, nullable=False)
-    password = db.Column(db.String(200), nullable=False)
-    is_admin = db.Column(db.Boolean, default=False)
-    appointments = db.relationship('Appointment', backref='user', lazy=True)
-
-# تعریف مدل Appointment
-class Appointment(db.Model):
-    __tablename__ = 'appointments'
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
-    name = db.Column(db.String(100), nullable=False)
-    phone_number = db.Column(db.String(15), nullable=False)
-    age = db.Column(db.Integer, nullable=False)
-    education = db.Column(db.String(100), nullable=False)
-    national_id = db.Column(db.String(15), nullable=False)
-    consultant = db.Column(db.String(100), nullable=False)
-    date = db.Column(db.String(50), nullable=False)
-    confirmed = db.Column(db.Boolean, default=False)
-    appointment_number = db.Column(db.String(4), nullable=False)
-
-# لود کردن کاربر برای Flask-Login
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# روت برای صفحه اصلی
-@app.route('/')
-def index():
-    return render_template('home.html')
-
-# روت برای نوبت‌های امروز
+# نمایش نوبت‌های امروز
 @app.route('/today_appointments')
 def today_appointments():
-    today = jdatetime.now().strftime('%Y/%m/%d')  # تاریخ شمسی امروز
+    today = datetime.now().strftime('%Y/%m/%d')
     appointments = Appointment.query.filter_by(date=today).all()
     return render_template('today_appointments.html', appointments=appointments, today=today)
 
-# روت برای رزرو نوبت
+# فرم رزرو نوبت (داینامیک شده)
 @app.route('/book', methods=['GET', 'POST'])
 def book():
-    consultants = ['مشاور 1', 'مشاور 2', 'مشاور 3']
+    consultants = Consultant.query.all()  # لود داینامیک مشاورها از دیتابیس
     if request.method == 'POST':
         appointment_number = str(random.randint(1000, 9999))
         appointment = Appointment(
@@ -76,36 +47,37 @@ def book():
             age=request.form['age'],
             education=request.form['education'],
             national_id=request.form['national_id'],
-            consultant=request.form['consultant'],
-            date=request.form['date'],  # تاریخ هنوز به‌صورت دستی وارد می‌شه
+            consultant=request.form['consultant'],  # نام مشاور از فرم
+            date=request.form['date'],
             appointment_number=appointment_number
         )
         db.session.add(appointment)
         db.session.commit()
-        flash('نوبت با موفقیت ثبت شد!')
+        flash('نوبت شما با موفقیت ثبت شد! لطفاً شماره نوبت خود را یادداشت کنید.', 'success')
         return render_template('book.html', consultants=consultants, appointment_number=appointment_number)
     return render_template('book.html', consultants=consultants)
 
-# روت برای ورود
+# ورود کاربر
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
         user = User.query.filter_by(username=username).first()
-        if user and bcrypt.check_password_hash(user.password, password):
+        if user and bcrypt.hashpw(password.encode('utf-8'), user.password.encode('utf-8')) == user.password.encode('utf-8'):
             login_user(user)
             return redirect(url_for('index'))
         flash('نام کاربری یا رمز عبور اشتباه است!')
     return render_template('login.html')
 
-# روت برای ثبت‌نام
+# ثبت‌نام کاربر
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+        salt = bcrypt.gensalt()
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
         new_user = User(username=username, password=hashed_password, is_admin=False)
         db.session.add(new_user)
         db.session.commit()
@@ -113,29 +85,42 @@ def register():
         return redirect(url_for('login'))
     return render_template('register.html')
 
-# روت برای خروج
+# ساخت کاربر ادمین (موقت)
+@app.route('/create_admin')
+def create_admin():
+    admin_user = User.query.filter_by(username='admin').first()
+    if not admin_user:
+        salt = bcrypt.gensalt()
+        hashed_password = bcrypt.hashpw('123456*'.encode('utf-8'), salt).decode('utf-8')
+        admin_user = User(username='karo', password=hashed_password, is_admin=True)
+        db.session.add(admin_user)
+        db.session.commit()
+        return "کاربر ادمین با موفقیت ساخته شد! username: karo, password: 123456*"
+    return "کاربر ادمین قبلاً وجود دارد!"
+
+# خروج کاربر
 @app.route('/logout')
 @login_required
 def logout():
     logout_user()
     return redirect(url_for('login'))
 
-# روت برای پنل مدیریت
+# پنل ادمین
 @app.route('/admin_panel')
 @login_required
 def admin_panel():
     if not current_user.is_admin:
-        flash('دسترسی غیرمجاز!')
+        flash('فقط ادمین‌ها به این صفحه دسترسی دارند!')
         return redirect(url_for('index'))
     appointments = Appointment.query.all()
     return render_template('admin_panel.html', appointments=appointments)
 
-# روت برای تأیید نوبت
+# تأیید نوبت
 @app.route('/confirm_appointment/<int:appointment_id>')
 @login_required
 def confirm_appointment(appointment_id):
     if not current_user.is_admin:
-        flash('دسترسی غیرمجاز!')
+        flash('فقط ادمین‌ها می‌توانند این کار را انجام دهند!')
         return redirect(url_for('index'))
     appointment = Appointment.query.get_or_404(appointment_id)
     appointment.confirmed = True
@@ -143,12 +128,12 @@ def confirm_appointment(appointment_id):
     flash('نوبت با موفقیت تأیید شد!')
     return redirect(url_for('admin_panel'))
 
-# روت برای لغو نوبت
+# لغو نوبت
 @app.route('/cancel_appointment/<int:appointment_id>')
 @login_required
 def cancel_appointment(appointment_id):
     if not current_user.is_admin:
-        flash('دسترسی غیرمجاز!')
+        flash('فقط ادمین‌ها می‌توانند این کار را انجام دهند!')
         return redirect(url_for('index'))
     appointment = Appointment.query.get_or_404(appointment_id)
     db.session.delete(appointment)
@@ -156,7 +141,7 @@ def cancel_appointment(appointment_id):
     flash('نوبت با موفقیت لغو شد!')
     return redirect(url_for('admin_panel'))
 
-# روت برای صفحه پروفایل
+# پروفایل کاربر
 @app.route('/profile')
 @login_required
 def profile():
@@ -166,7 +151,74 @@ def profile():
     appointments = Appointment.query.filter_by(user_id=current_user.id).all()
     return render_template('profile.html', appointments=appointments)
 
-# اجرای اپلیکیشن
+# صفحه اصلی
+@app.route('/')
+def index():
+    return render_template('home.html')
+
+# نمایش لیست مشاورها
+@app.route('/admin/consultants')
+@login_required
+def list_consultants():
+    if not current_user.is_admin:
+        flash('فقط ادمین‌ها به این صفحه دسترسی دارند!')
+        return redirect(url_for('index'))
+    consultants = Consultant.query.all()  # لود همه مشاورها
+    return render_template('admin_consultants.html', consultants=consultants)
+
+# اضافه کردن مشاور
+@app.route('/admin/add_consultant', methods=['GET', 'POST'])
+@login_required
+def add_consultant():
+    if not current_user.is_admin:
+        flash('فقط ادمین‌ها به این صفحه دسترسی دارند!')
+        return redirect(url_for('admin_panel'))
+    if request.method == 'POST':
+        name = request.form['name']
+        specialty = request.form['specialty']
+        time_start = request.form['time_start']
+        time_end = request.form['time_end']
+        days = ','.join(request.form.getlist('days'))
+
+        new_consultant = Consultant(name=name, specialty=specialty, time_start=time_start, time_end=time_end, days=days)
+        db.session.add(new_consultant)
+        db.session.commit()
+        flash('مشاور با موفقیت ثبت شد!')
+        return redirect(url_for('list_consultants'))  # به لیست مشاورها برمی‌گرده
+    return render_template('admin_add_consultant.html')
+
+# ویرایش مشاور
+@app.route('/admin/edit_consultant/<int:consultant_id>', methods=['GET', 'POST'])
+@login_required
+def edit_consultant(consultant_id):
+    if not current_user.is_admin:
+        flash('فقط ادمین‌ها به این صفحه دسترسی دارند!')
+        return redirect(url_for('index'))
+    consultant = Consultant.query.get_or_404(consultant_id)
+    if request.method == 'POST':
+        consultant.name = request.form['name']
+        consultant.specialty = request.form['specialty']
+        consultant.time_start = request.form['time_start']
+        consultant.time_end = request.form['time_end']
+        consultant.days = ','.join(request.form.getlist('days'))
+        db.session.commit()
+        flash('مشاور با موفقیت ویرایش شد!')
+        return redirect(url_for('list_consultants'))
+    return render_template('admin_edit_consultant.html', consultant=consultant)
+
+# حذف مشاور
+@app.route('/admin/delete_consultant/<int:consultant_id>')
+@login_required
+def delete_consultant(consultant_id):
+    if not current_user.is_admin:
+        flash('فقط ادمین‌ها به این صفحه دسترسی دارند!')
+        return redirect(url_for('index'))
+    consultant = Consultant.query.get_or_404(consultant_id)
+    db.session.delete(consultant)
+    db.session.commit()
+    flash('مشاور با موفقیت حذف شد!')
+    return redirect(url_for('list_consultants'))
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
