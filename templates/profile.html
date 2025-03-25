@@ -21,7 +21,7 @@
                         <tr>
                             <td>{{ appointment.name }}</td>
                             <td>{{ appointment.phone_number }}</td>
-                            <td>{{ appointment.consultant }}</td>
+                            <td>{{ appointment.consultant.name }}</td>
                             <td>{{ appointment.date }}</td>
                             <td>{{ appointment.appointment_number }}</td>
                             <td>{{ 'تأیید شده' if appointment.confirmed else 'در انتظار' }}</td>

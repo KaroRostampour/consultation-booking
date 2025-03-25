@@ -99,7 +99,7 @@ def book():
             age=age,
             education=education,
             national_id=national_id,
-            consultant=consultant_name,
+            consultant_id=consultant.id,  # ذخیره consultant_id به جای نام
             date=date,
             appointment_number=appointment_number
         )

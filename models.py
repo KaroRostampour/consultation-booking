@@ -11,20 +11,6 @@ class User(UserMixin, db.Model):
     is_admin = db.Column(db.Boolean, default=False)
     appointments = db.relationship('Appointment', backref='user', lazy=True)
 
-class Appointment(db.Model):
-    __tablename__ = 'appointments'
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    name = db.Column(db.String(100), nullable=False)
-    phone_number = db.Column(db.String(15), nullable=False)
-    age = db.Column(db.Integer, nullable=False)
-    education = db.Column(db.String(100), nullable=False)
-    national_id = db.Column(db.String(15), nullable=False)
-    consultant = db.Column(db.String(100), nullable=False)
-    date = db.Column(db.String(50), nullable=False)
-    confirmed = db.Column(db.Boolean, default=False)
-    appointment_number = db.Column(db.String(4), nullable=False)
-
 class Consultant(db.Model):
     __tablename__ = 'consultants'
     id = db.Column(db.Integer, primary_key=True)
@@ -36,3 +22,19 @@ class Consultant(db.Model):
 
     def __repr__(self):
         return f'<Consultant {self.name}>'
+
+class Appointment(db.Model):
+    __tablename__ = 'appointments'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    phone_number = db.Column(db.String(15), nullable=False)
+    age = db.Column(db.Integer, nullable=False)
+    education = db.Column(db.String(100), nullable=False)
+    national_id = db.Column(db.String(15), nullable=False)
+    consultant_id = db.Column(db.Integer, db.ForeignKey('consultants.id'), nullable=False)  # کلید خارجی جدید
+    date = db.Column(db.String(50), nullable=False)
+    confirmed = db.Column(db.Boolean, default=False)
+    appointment_number = db.Column(db.String(4), nullable=False)
+
+    consultant = db.relationship('Consultant', backref='appointments', lazy=True)  # رابطه
