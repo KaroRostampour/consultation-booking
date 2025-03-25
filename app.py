@@ -9,7 +9,6 @@ from dotenv import load_dotenv  # برای لود متغیرهای محیطی
 
 from models import db, User, Appointment, Consultant
 
-
 load_dotenv()
 
 app = Flask(__name__)
@@ -34,27 +33,81 @@ def today_appointments():
     appointments = Appointment.query.filter_by(date=today).all()
     return render_template('today_appointments.html', appointments=appointments, today=today)
 
-# فرم رزرو نوبت (داینامیک شده)
+# فرم رزرو نوبت (داینامیک شده) با اعتبارسنجی
 @app.route('/book', methods=['GET', 'POST'])
 def book():
     consultants = Consultant.query.all()  # لود داینامیک مشاورها از دیتابیس
     if request.method == 'POST':
+        name = request.form['name']
+        phone_number = request.form['phone_number']
+        age = request.form['age']
+        education = request.form['education']
+        national_id = request.form['national_id']
+        consultant_name = request.form['consultant']
+        date = request.form['date']
+
+        # اعتبارسنجی نام (حداقل 2 کاراکتر)
+        if len(name.strip()) < 2:
+            flash('نام باید حداقل 2 کاراکتر باشد.', 'danger')
+            return render_template('book.html', consultants=consultants)
+
+        # اعتبارسنجی شماره تماس
+        if not phone_number.startswith('09') or len(phone_number) != 11 or not phone_number.isdigit():
+            flash('شماره تماس باید 11 رقمی باشد و با 09 شروع شود.', 'danger')
+            return render_template('book.html', consultants=consultants)
+
+        # اعتبارسنجی کد ملی
+        if len(national_id) != 10 or not national_id.isdigit():
+            flash('کد ملی باید 10 رقمی باشد.', 'danger')
+            return render_template('book.html', consultants=consultants)
+
+        # اعتبارسنجی سن
+        try:
+            age = int(age)
+            if age < 1 or age > 120:
+                flash('سن باید بین 1 تا 120 باشد.', 'danger')
+                return render_template('book.html', consultants=consultants)
+        except ValueError:
+            flash('سن باید یک عدد باشد.', 'danger')
+            return render_template('book.html', consultants=consultants)
+
+        # اعتبارسنجی تحصیلات
+        valid_educations = ['دیپلم', 'کاردانی', 'کارشناسی', 'کارشناسی ارشد', 'دکتری']
+        if education not in valid_educations:
+            flash('تحصیلات انتخاب‌شده معتبر نیست.', 'danger')
+            return render_template('book.html', consultants=consultants)
+
+        # اعتبارسنجی مشاور
+        consultant = Consultant.query.filter_by(name=consultant_name).first()
+        if not consultant:
+            flash('مشاور انتخاب‌شده پیدا نشد.', 'danger')
+            return render_template('book.html', consultants=consultants)
+
+        # اعتبارسنجی تاریخ و زمان (فقط فرمت)
+        try:
+            datetime.strptime(date, '%Y-%m-%dT%H:%M')
+        except ValueError:
+            flash('تاریخ و زمان واردشده معتبر نیست.', 'danger')
+            return render_template('book.html', consultants=consultants)
+
+        # ثبت نوبت
         appointment_number = str(random.randint(1000, 9999))
         appointment = Appointment(
             user_id=current_user.id if current_user.is_authenticated else None,
-            name=request.form['name'],
-            phone_number=request.form['phone_number'],
-            age=request.form['age'],
-            education=request.form['education'],
-            national_id=request.form['national_id'],
-            consultant=request.form['consultant'],  # نام مشاور از فرم
-            date=request.form['date'],
+            name=name,
+            phone_number=phone_number,
+            age=age,
+            education=education,
+            national_id=national_id,
+            consultant=consultant_name,
+            date=date,
             appointment_number=appointment_number
         )
         db.session.add(appointment)
         db.session.commit()
         flash('نوبت شما با موفقیت ثبت شد! لطفاً شماره نوبت خود را یادداشت کنید.', 'success')
         return render_template('book.html', consultants=consultants, appointment_number=appointment_number)
+
     return render_template('book.html', consultants=consultants)
 
 # ورود کاربر
