@@ -33,10 +33,10 @@ def today_appointments():
     appointments = Appointment.query.filter_by(date=today).all()
     return render_template('today_appointments.html', appointments=appointments, today=today)
 
-# فرم رزرو نوبت (داینامیک شده) با اعتبارسنجی
+# لود داینامیک مشاورها از دیتابیس
 @app.route('/book', methods=['GET', 'POST'])
 def book():
-    consultants = Consultant.query.all()  # لود داینامیک مشاورها از دیتابیس
+    consultants = Consultant.query.all()  
     if request.method == 'POST':
         name = request.form['name']
         phone_number = request.form['phone_number']
@@ -83,11 +83,27 @@ def book():
             flash('مشاور انتخاب‌شده پیدا نشد.', 'danger')
             return render_template('book.html', consultants=consultants)
 
-        # اعتبارسنجی تاریخ و زمان (فقط فرمت)
+        # اعتبارسنجی تاریخ و زمان
         try:
-            datetime.strptime(date, '%Y-%m-%dT%H:%M')
+            appointment_date = datetime.strptime(date, '%Y-%m-%dT%H:%M')
         except ValueError:
             flash('تاریخ و زمان واردشده معتبر نیست.', 'danger')
+            return render_template('book.html', consultants=consultants)
+
+        # چک کردن روز هفته
+        days_of_week = ['دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه', 'شنبه', 'یکشنبه']
+        appointment_day = days_of_week[appointment_date.weekday()]
+        consultant_days = consultant.days.split(',')
+        if appointment_day not in consultant_days:
+            flash(f'مشاور در روز {appointment_day} کار نمی‌کند. روزهای کاری: {consultant.days}', 'danger')
+            return render_template('book.html', consultants=consultants)
+
+        # چک کردن بازه زمانی
+        appointment_time = appointment_date.time()
+        time_start = datetime.strptime(consultant.time_start, '%H:%M').time()
+        time_end = datetime.strptime(consultant.time_end, '%H:%M').time()
+        if not (time_start <= appointment_time <= time_end):
+            flash(f'زمان انتخاب‌شده خارج از بازه کاری مشاور است ({consultant.time_start} تا {consultant.time_end}).', 'danger')
             return render_template('book.html', consultants=consultants)
 
         # ثبت نوبت
@@ -99,7 +115,7 @@ def book():
             age=age,
             education=education,
             national_id=national_id,
-            consultant_id=consultant.id,  # ذخیره consultant_id به جای نام
+            consultant_id=consultant.id,
             date=date,
             appointment_number=appointment_number
         )
